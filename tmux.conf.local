@@ -138,14 +138,14 @@ tmux_conf_theme_focused_pane_bg="$tmux_conf_theme_colour_2"
 # pane border style, possible values are:
 #   - thin (default)
 #   - fat
-tmux_conf_theme_pane_border_style=fat
+tmux_conf_theme_pane_border_style=thin
 
-# pane borders colours: vivid electric cyan on active (fat rule so it reads),
-# faint slate on inactive for soft contrast
+# pane borders colours: soft cyan on active (animated to breathe, see pulse-border.sh
+# in user customizations), faint slate on inactive for soft contrast
 tmux_conf_theme_pane_border="#3b4261"
-tmux_conf_theme_pane_active_border="#00f5ff"
+tmux_conf_theme_pane_active_border="#7dcfff"
 %if #{>=:#{version},3.2}
-tmux_conf_theme_pane_active_border="#{?pane_in_mode,$tmux_conf_theme_colour_9,#{?synchronize-panes,$tmux_conf_theme_colour_16,#00f5ff}}"
+tmux_conf_theme_pane_active_border="#{?pane_in_mode,$tmux_conf_theme_colour_9,#{?synchronize-panes,$tmux_conf_theme_colour_16,#7dcfff}}"
 %endif
 
 # pane indicator colours (when you hit <prefix> + q)
@@ -597,3 +597,8 @@ set -g window-active-style 'bg=default' #!important
 # every border uniform and points teal arrows at the active pane, adapting to
 # whatever shape the split makes.
 set -g pane-border-indicators arrows #!important
+
+# --- Neon breathe: animate the active border through a cyan gradient ---
+# Background loop rewrites pane-active-border-style on a timer; the script guards
+# against duplicate loops on reload and exits when the tmux server is gone.
+run -b 'sh ~/.config/tmux/scripts/pulse-border.sh'

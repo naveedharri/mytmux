@@ -19,7 +19,8 @@ If the user prefers manual steps, or the installer fails, do exactly what it doe
 3. `mkdir -p ~/.config/tmux/scripts`
 4. Symlink: `ln -sf ~/.local/share/oh-my-tmux/.tmux.conf ~/.config/tmux/tmux.conf`
 5. Copy this repo's `tmux.conf.local` → `~/.config/tmux/tmux.conf.local`
-6. Copy `scripts/pane-graveyard.sh` → `~/.config/tmux/scripts/` and `chmod +x` it
+6. Copy every `scripts/*.sh` → `~/.config/tmux/scripts/` and `chmod +x` them
+   (currently `pane-graveyard.sh` and `pulse-border.sh`)
 7. Copy `warp/settings.toml` → `~/.warp/settings.toml` (only if Warp is installed;
    back up the existing one first). Restart Warp so option-as-Meta takes effect.
 8. Reload: `tmux source ~/.config/tmux/tmux.conf`
@@ -34,8 +35,11 @@ If the user prefers manual steps, or the installer fails, do exactly what it doe
   `settings.toml` sets `extra_meta_keys = { left_alt = true, right_alt = false }`.
   For other terminals (iTerm2, Ghostty, Terminal.app), enable "use option as Meta"
   in that terminal's settings.
-- `pane-graveyard.sh` is referenced from `tmux.conf.local` via `~/.config/tmux/scripts/…`
-  (portable, no absolute user path), so it works on any machine once copied.
+- Scripts are referenced from `tmux.conf.local` via `~/.config/tmux/scripts/…`
+  (portable, no absolute user path), so they work on any machine once copied.
+- `pulse-border.sh` is launched in the background (`run -b`) from `tmux.conf.local`
+  and animates the active pane border. It self-guards against duplicate loops on
+  reload and exits when the server dies, so re-sourcing the config is safe.
 
 ## Syncing changes back
 

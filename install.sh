@@ -53,8 +53,8 @@ if [ -f "$TMUX_DIR/tmux.conf.local" ] && ! cmp -s "$TMUX_DIR/tmux.conf.local" "$
   say "backed up existing tmux.conf.local"
 fi
 cp "$REPO_DIR/tmux.conf.local" "$TMUX_DIR/tmux.conf.local"
-cp "$REPO_DIR/scripts/pane-graveyard.sh" "$TMUX_DIR/scripts/pane-graveyard.sh"
-chmod +x "$TMUX_DIR/scripts/pane-graveyard.sh"
+cp "$REPO_DIR"/scripts/*.sh "$TMUX_DIR/scripts/"
+chmod +x "$TMUX_DIR"/scripts/*.sh
 
 # 5. Warp settings (optional) --------------------------------------------------
 if [ "${SKIP_WARP:-}" != "1" ] && [ -d "$HOME/.warp" ]; then
