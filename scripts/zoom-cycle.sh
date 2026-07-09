@@ -14,6 +14,13 @@
 # active pane takes ~7/8 (0.875, "3.5 of 4") of the window in each axis; the rest
 # share the remaining strip. Applied to BOTH width and height so it behaves for
 # side-by-side, stacked, and grid layouts alike.
+#
+# Usage: zoom-cycle.sh {cycle|reset} [window-id]
+# The window-id is passed from the keybinding / hook as #{window_id}. It MUST be
+# explicit: this runs backgrounded (run-shell -b), and a backgrounded tmux call
+# with no target resolves to the server's "current" window — which on a server
+# with many sessions (e.g. the _graveyard) is often NOT the window you acted in.
+# Guessing there is exactly why an earlier version failed to reset on Cmd+k.
 set -uo pipefail
 
 LEVELS=5
@@ -23,9 +30,10 @@ FRACS=(0 0.45 0.56 0.67 0.78 0.875)
 STEPS=10        # animation frames per press
 FRAME=0.010     # seconds per frame (~100ms total glide)
 
-win="$(tmux display -p '#{window_id}')"
+sub="${1:-cycle}"
+win="${2:-$(tmux display -p '#{window_id}')}"   # explicit window, fallback if run by hand
 
-get() { tmux show -wqv "$1" 2>/dev/null; }
+get() { tmux show -wqv -t "$win" "$1" 2>/dev/null; }
 
 # Return to the exact layout captured when zoom began, then forget the state.
 restore_base() {
@@ -38,7 +46,7 @@ restore_base() {
   tmux set -uw -t "$win" @zoom_base 2>/dev/null || true
 }
 
-case "${1:-cycle}" in
+case "$sub" in
   reset)
     # Cheap no-op on the common path: bail unless a zoom is actually active.
     lvl="$(get @zoom_level)"; lvl="${lvl:-0}"
@@ -48,7 +56,7 @@ case "${1:-cycle}" in
 
   cycle)
     # Nothing to zoom in a single-pane window.
-    [ "$(tmux display -p '#{window_panes}')" -lt 2 ] && exit 0
+    [ "$(tmux display -p -t "$win" '#{window_panes}')" -lt 2 ] && exit 0
 
     lvl="$(get @zoom_level)"; lvl="${lvl:-0}"
     next=$(( (lvl + 1) % (LEVELS + 1) ))
@@ -59,12 +67,14 @@ case "${1:-cycle}" in
       exit 0
     fi
 
+    pane="$(tmux display -p -t "$win" '#{pane_id}')"   # the window's active pane
+
     # First step out of the even layout: remember it for an exact reset.
-    [ "$lvl" -eq 0 ] && tmux set -w -t "$win" @zoom_base "$(tmux display -p '#{window_layout}')"
+    [ "$lvl" -eq 0 ] && tmux set -w -t "$win" @zoom_base "$(tmux display -p -t "$win" '#{window_layout}')"
     tmux set -w -t "$win" @zoom_level "$next"
 
     frac="${FRACS[$next]}"
-    read -r ww wh cw ch <<<"$(tmux display -p '#{window_width} #{window_height} #{pane_width} #{pane_height}')"
+    read -r ww wh cw ch <<<"$(tmux display -p -t "$pane" '#{window_width} #{window_height} #{pane_width} #{pane_height}')"
     tw="$(awk "BEGIN{printf \"%d\", $ww * $frac}")"
     th="$(awk "BEGIN{printf \"%d\", $wh * $frac}")"
 
@@ -72,14 +82,14 @@ case "${1:-cycle}" in
     for i in $(seq 1 "$STEPS"); do
       w=$(( cw + (tw - cw) * i / STEPS ))
       h=$(( ch + (th - ch) * i / STEPS ))
-      tmux resize-pane -x "$w" -y "$h" 2>/dev/null || true
+      tmux resize-pane -t "$pane" -x "$w" -y "$h" 2>/dev/null || true
       if [ "$i" -lt "$STEPS" ]; then sleep "$FRAME"; fi
     done
     exit 0
     ;;
 
   *)
-    echo "usage: $0 {cycle|reset}" >&2
+    echo "usage: $0 {cycle|reset} [window-id]" >&2
     exit 2
     ;;
 esac
