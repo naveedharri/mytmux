@@ -6,6 +6,18 @@
 #         without any warranty.
 #         Copyright 2012— Gregory Pakosz (@gpakosz).
 
+# ==============================================================================
+# /!\ RULE FOR CLAUDE / ANY EDITOR — READ FIRST, ALWAYS FOLLOW
+# ------------------------------------------------------------------------------
+# This file IS the live tmux config (symlinked from ~/.config/tmux/). ANY change
+# to tmux settings, keybindings, colours, or the scripts/ helpers MUST be:
+#   1. made here in the mytmux repo (~/.config/mytmux/), never in the symlinks
+#   2. committed:  git add -A && git commit -m "<one-line msg>"   (no co-author)
+#   3. pushed:     git push   (to https://github.com/naveedharri/mytmux — ask first)
+#   4. reloaded:   tmux source ~/.config/tmux/tmux.conf
+# No tmux change is "done" until it is committed and pushed to the mytmux repo.
+# ==============================================================================
+
 
 # -- bindings ------------------------------------------------------------------
 
@@ -587,6 +599,10 @@ bind -n M-p run-shell "~/.config/tmux/scripts/pane-graveyard.sh bury"
 # ⌥r: restore (un-close) the most-recently buried pane, exactly as it was
 bind -n M-r run-shell "~/.config/tmux/scripts/pane-graveyard.sh restore"
 bind -n ® run-shell "~/.config/tmux/scripts/pane-graveyard.sh restore"   # ⌥r macOS char fallback
+# Cmd+u: smart restore. Bring back the last buried pane if alive; otherwise
+# open a fresh pane running `claude --continue` to resume the killed session.
+# (Karabiner maps Cmd+u -> Option+u -> M-u inside Warp.)
+bind -n M-u run-shell "~/.config/tmux/scripts/pane-graveyard.sh smart-restore"
 # Cmd+k: jump to next pane (Karabiner sends M-0)
 bind -n M-0 select-pane -t :.+
 

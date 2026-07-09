@@ -4,8 +4,9 @@
 # _graveyard session. The process keeps running, so it can be restored exactly
 # as it was: same shell, same scrollback, same running program (e.g. Claude).
 #
-# Usage:  pane-graveyard.sh bury      # hide the current pane (recoverable)
-#         pane-graveyard.sh restore   # pull the most-recently buried pane back
+# Usage:  pane-graveyard.sh bury           # hide the current pane (recoverable)
+#         pane-graveyard.sh restore        # pull the most-recently buried pane back
+#         pane-graveyard.sh smart-restore  # restore a buried pane, else resume Claude
 set -uo pipefail
 
 GRAVE="_graveyard"
@@ -13,6 +14,14 @@ GRAVE="_graveyard"
 ensure_grave() {
   tmux has-session -t "$GRAVE" 2>/dev/null || \
     tmux new-session -d -s "$GRAVE" -n placeholder 'while :; do sleep 3600; done'
+}
+
+# echo the window id of the most-recently buried pane (LIFO), or nothing
+latest_buried() {
+  tmux has-session -t "$GRAVE" 2>/dev/null || return 0
+  tmux list-windows -t "$GRAVE" \
+      -F '#{window_activity} #{window_id} #{window_name}' \
+    | grep -v ' placeholder$' | sort -nr | head -1 | awk '{print $2}'
 }
 
 case "${1:-}" in
@@ -27,17 +36,26 @@ case "${1:-}" in
     tmux select-layout tiled 2>/dev/null || true
     ;;
   restore)
-    tmux has-session -t "$GRAVE" 2>/dev/null || { tmux display-message "graveyard empty"; exit 0; }
-    # most-recently buried window = highest activity timestamp (LIFO undo)
-    win="$(tmux list-windows -t "$GRAVE" \
-             -F '#{window_activity} #{window_id} #{window_name}' \
-           | grep -v ' placeholder$' | sort -nr | head -1 | awk '{print $2}')"
+    win="$(latest_buried)"
     [ -z "$win" ] && { tmux display-message "graveyard empty"; exit 0; }
     tmux join-pane -s "$win"
     tmux select-layout tiled 2>/dev/null || true
     ;;
+  smart-restore)
+    # 1) a recoverably-closed pane still alive in the graveyard? bring it back untouched.
+    win="$(latest_buried)"
+    if [ -n "$win" ]; then
+      tmux join-pane -s "$win"
+      tmux select-layout tiled 2>/dev/null || true
+      exit 0
+    fi
+    # 2) nothing buried (pane was truly killed / crashed): open a fresh pane and
+    #    resume the last Claude conversation from history.
+    tmux split-window -c '#{pane_current_path}' 'claude --continue'
+    tmux select-layout tiled 2>/dev/null || true
+    ;;
   *)
-    echo "usage: $0 {bury|restore}" >&2
+    echo "usage: $0 {bury|restore|smart-restore}" >&2
     exit 2
     ;;
 esac
