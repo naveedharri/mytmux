@@ -3,6 +3,23 @@
 This repo is a portable tmux setup. When the user clones it onto a new machine
 and asks you to "apply my tmux settings" / "set up tmux", do the following.
 
+## Rule: this repo IS the live config — always edit here
+
+On Naveed's machine the live tmux files are **symlinked** into this checkout
+(`install.sh link`): `~/.config/tmux/tmux.conf.local` and
+`~/.config/tmux/scripts/*.sh` point at `~/.config/mytmux/...`. So any request to
+change a tmux setting, keybinding, colour, script, or Warp config must be made by
+editing the files in THIS repo (`~/.config/mytmux/`), never by editing the
+`~/.config/tmux/` symlinks or hand-tweaking the running server. Then:
+
+1. `git add -A && git commit` in this repo (simple one-line message, no co-author).
+2. Ask Naveed before `git push`.
+3. Reload the live config so a running session picks it up:
+   `tmux source ~/.config/tmux/tmux.conf`.
+
+If a machine was set up with copy mode instead of `link`, run `./install.sh link`
+first so edits here flow through, or copy the files back (see "Syncing changes back").
+
 ## Apply the setup
 
 Run the installer. It is idempotent and backs up any existing config first:
@@ -43,11 +60,22 @@ If the user prefers manual steps, or the installer fails, do exactly what it doe
 
 ## Syncing changes back
 
-If the user changes their live config and wants it saved, copy the live files
-back into this repo, then commit and push (ask before pushing):
+This machine is installed in link mode: `~/.config/tmux/tmux.conf.local` and each
+`~/.config/tmux/scripts/*.sh` are symlinks into this checkout. Editing the live
+files edits the repo directly, so tmux changes need no copy step. Just commit and
+push from the checkout (ask before pushing):
 
 ```bash
-cp ~/.config/tmux/tmux.conf.local           tmux.conf.local
-cp ~/.config/tmux/scripts/pane-graveyard.sh scripts/
-cp ~/.warp/settings.toml                     warp/settings.toml
+cd ~/.config/mytmux
+git add -A && git commit -m "update config" && git push
 ```
+
+Only `~/.warp/settings.toml` is a copy, not a symlink. If Warp prefs changed, copy
+it back first:
+
+```bash
+cp ~/.warp/settings.toml ~/.config/mytmux/warp/settings.toml
+```
+
+(If a machine was set up in copy mode instead, `tmux.conf.local` and `scripts/*.sh`
+are plain copies and must be copied back the same way.)

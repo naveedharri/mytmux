@@ -81,11 +81,20 @@ via `run -b 'sh ~/.config/tmux/scripts/pulse-border.sh'`.
 
 ## Applying updates later
 
-After editing config locally, copy it back into the repo and push:
+In link mode (the recommended install) your live `tmux.conf.local` and
+`scripts/*.sh` are symlinks into this checkout, so editing them edits the repo
+directly. No copying. Every tmux change goes through GitHub like this:
 
 ```bash
-cp ~/.config/tmux/tmux.conf.local  ~/Downloads/mytmux/tmux.conf.local
-cp ~/.config/tmux/scripts/*.sh ~/Downloads/mytmux/scripts/
-cp ~/.warp/settings.toml ~/Downloads/mytmux/warp/settings.toml
-cd ~/Downloads/mytmux && git add -A && git commit -m "update config" && git push
+# edit ~/.config/tmux/tmux.conf.local or ~/.config/tmux/scripts/*.sh
+cd ~/.config/mytmux
+git add -A && git commit -m "update config" && git push
+tmux source ~/.config/tmux/tmux.conf     # apply to the running session
+```
+
+Warp's `settings.toml` is the one exception: it is copied, not symlinked. If you
+changed Warp prefs, copy that file back before committing (restart Warp to apply):
+
+```bash
+cp ~/.warp/settings.toml ~/.config/mytmux/warp/settings.toml
 ```
