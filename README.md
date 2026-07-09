@@ -84,14 +84,14 @@ on the left, and every other pane lines up as a readable vertical list down the
 right. Press Cmd+l again — or switch panes (Cmd+k, `M-h/j/k/l`, arrows, a mouse
 click) — to restore the exact previous layout, wired via an `after-select-pane[99]`
 hook so it never clobbers other hooks. There are deliberately no intermediate
-levels: one press, one useful focus view.
+levels: one press, one instant near-fullscreen focus view.
 
 A layout swap is used instead of resizing panes in place because shrinking panes
 inside a grid makes them narrow, and terminal TUIs (Claude Code especially) reflow
 badly when narrow — every word wraps onto its own line and the background panes look
-broken. The list keeps each background pane a full-height slice wide enough to render
-cleanly. The focused pane's width share is `MAIN_FRAC` in the script (default `0.72`);
-raise it for more focus at the cost of a narrower list. No patched tmux, no plugin.
+broken. The list keeps each background pane a full-height slice. The focused pane's
+width share is `MAIN_FRAC` in the script (default `0.85`, near-fullscreen); lower it
+(e.g. `0.72`) for a wider, more readable list. Instant, no animation, no plugin.
 
 ## Pane graveyard
 

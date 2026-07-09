@@ -21,9 +21,9 @@
 # with many sessions (e.g. the _graveyard) is often NOT the window you acted in.
 set -uo pipefail
 
-MAIN_FRAC=0.72   # width share of the focused pane; the rest is the sidebar list.
-                 # Bigger = more focus but a narrower list. 0.72 keeps the list
-                 # panes wide enough that a Claude TUI still renders cleanly.
+MAIN_FRAC=0.85   # width share of the focused pane; the rest is the sidebar list.
+                 # Near-fullscreen focus while the other panes stay in view as a
+                 # list. Lower it (e.g. 0.72) for a wider, more readable list.
 
 sub="${1:-toggle}"
 win="${2:-$(tmux display -p '#{window_id}')}"   # explicit window, fallback if run by hand
