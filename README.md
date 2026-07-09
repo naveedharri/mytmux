@@ -56,7 +56,7 @@ curl -fsSL https://raw.githubusercontent.com/naveedharri/mytmux/develop/install.
 | `tmux.conf.local`            | `~/.config/tmux/tmux.conf.local`      | my customizations (bindings, status bar, options)      |
 | `scripts/pane-graveyard.sh`  | `~/.config/tmux/scripts/`             | "undo close pane" — buries panes instead of killing    |
 | `scripts/pulse-border.sh`    | `~/.config/tmux/scripts/`             | animates the active pane border through a cyan gradient |
-| `scripts/zoom-cycle.sh`      | `~/.config/tmux/scripts/`             | leveled progressive zoom of the active pane (Cmd+l)    |
+| `scripts/zoom-cycle.sh`      | `~/.config/tmux/scripts/`             | focus zoom: active pane big, others as a side list (Cmd+l) |
 | `warp/settings.toml`         | `~/.warp/settings.toml`               | Warp prefs, incl. option-as-Meta so `M-` bindings work |
 
 Existing `tmux.conf.local` and Warp `settings.toml` are backed up (`.bak.<timestamp>`)
@@ -79,14 +79,19 @@ so on this machine Cmd+k = `M-0` (cycle) and Cmd+l = `M-9` (zoom).
 ## Pane zoom
 
 `zoom-cycle.sh` is a softer alternative to `M-z` fullscreen. Cmd+l (`M-9`) toggles
-the **active** pane between the even layout and one big zoom where it takes ~7/8
-(3.5/4) of the window in each axis. There are deliberately no intermediate levels:
-one press, one useful zoom, press again to collapse. Every other pane stays visible
-and interactive the whole time — the rest share the remaining strip. Moving focus to
-another pane (Cmd+k, `M-h/j/k/l`, arrows, or a mouse click) collapses the zoom too,
-wired via an `after-select-pane[99]` hook so it never clobbers other hooks. No
-patched tmux and no plugin: the zoom-in steps `resize-pane` in small increments
-(~100ms) so it reads as a smooth glide; the collapse restores the exact saved layout.
+the window into a **main-vertical** layout: the **active** pane becomes one big pane
+on the left, and every other pane lines up as a readable vertical list down the
+right. Press Cmd+l again — or switch panes (Cmd+k, `M-h/j/k/l`, arrows, a mouse
+click) — to restore the exact previous layout, wired via an `after-select-pane[99]`
+hook so it never clobbers other hooks. There are deliberately no intermediate
+levels: one press, one useful focus view.
+
+A layout swap is used instead of resizing panes in place because shrinking panes
+inside a grid makes them narrow, and terminal TUIs (Claude Code especially) reflow
+badly when narrow — every word wraps onto its own line and the background panes look
+broken. The list keeps each background pane a full-height slice wide enough to render
+cleanly. The focused pane's width share is `MAIN_FRAC` in the script (default `0.72`);
+raise it for more focus at the cost of a narrower list. No patched tmux, no plugin.
 
 ## Pane graveyard
 
