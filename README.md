@@ -7,7 +7,26 @@ Built on [Oh My Tmux](https://github.com/gpakosz/.tmux) (gpakosz/.tmux). This
 repo only carries the customizations on top of it plus an installer that wires
 everything together.
 
-## One-line install
+## Install (single source of truth — recommended)
+
+Clone once to a stable home and run in **link mode**. This symlinks your live
+tmux config at the checkout, so editing here or running `git pull` changes your
+tmux setup directly. Settings live in one place, loaded straight from GitHub.
+
+```bash
+git clone https://github.com/naveedharri/mytmux.git ~/.config/mytmux
+cd ~/.config/mytmux && ./install.sh link
+```
+
+Update any machine later with just:
+
+```bash
+cd ~/.config/mytmux && git pull && tmux source ~/.config/tmux/tmux.conf
+```
+
+## Install (copy mode)
+
+If you'd rather have independent copies instead of symlinks:
 
 ```bash
 git clone https://github.com/naveedharri/mytmux.git ~/Downloads/mytmux
