@@ -606,6 +606,16 @@ bind -n M-u run-shell "~/.config/tmux/scripts/pane-graveyard.sh smart-restore"
 # Cmd+k: jump to next pane (Karabiner sends M-0)
 bind -n M-0 select-pane -t :.+
 
+# Cmd+l: leveled progressive zoom of the active pane (Karabiner sends M-9).
+# Each press grows the focused pane one step (5 levels); the 6th press wraps back
+# to the even layout, same loop-and-reset feel as Cmd+k. Other panes stay visible
+# and interactive. Runs backgrounded (-b) so the ~100ms glide never blocks input.
+bind -n M-9 run-shell -b "~/.config/tmux/scripts/zoom-cycle.sh cycle"
+# Any pane focus change (Cmd+k cycle, ⌥h/j/k/l, arrows, mouse click) collapses the
+# zoom back to the even layout. Indexed [99] so it coexists with any existing
+# after-select-pane hook and re-sourcing overwrites in place (no duplicate stacking).
+set-hook -g 'after-select-pane[99]' "run-shell -b \"~/.config/tmux/scripts/zoom-cycle.sh reset\""
+
 # --- Neon focus effect: dim inactive panes so focus visibly shifts on switch ---
 set -g window-style 'bg=#16161e' #!important
 set -g window-active-style 'bg=default' #!important

@@ -48,6 +48,7 @@ curl -fsSL https://raw.githubusercontent.com/naveedharri/mytmux/develop/install.
 | `tmux.conf.local`            | `~/.config/tmux/tmux.conf.local`      | my customizations (bindings, status bar, options)      |
 | `scripts/pane-graveyard.sh`  | `~/.config/tmux/scripts/`             | "undo close pane" — buries panes instead of killing    |
 | `scripts/pulse-border.sh`    | `~/.config/tmux/scripts/`             | animates the active pane border through a cyan gradient |
+| `scripts/zoom-cycle.sh`      | `~/.config/tmux/scripts/`             | leveled progressive zoom of the active pane (Cmd+l)    |
 | `warp/settings.toml`         | `~/.warp/settings.toml`               | Warp prefs, incl. option-as-Meta so `M-` bindings work |
 
 Existing `tmux.conf.local` and Warp `settings.toml` are backed up (`.bak.<timestamp>`)
@@ -62,6 +63,22 @@ Prefix is remapped: `M-b` sends prefix (option+b). Most actions are prefix-less
 - `M-h/j/k/l` move between panes, `M-1`..`M-5` jump to window
 - `M-z` zoom pane, `M-n` new tiled split, `M-x` kill pane (confirm)
 - `M-q` / `M-p` bury current pane (recoverable), `M-r` restore last buried pane
+- `M-0` cycle to next pane (loops), `M-9` leveled progressive zoom of active pane
+
+Cmd-key equivalents are routed through Karabiner (Cmd -> Option+key inside Warp),
+so on this machine Cmd+k = `M-0` (cycle) and Cmd+l = `M-9` (zoom).
+
+## Leveled zoom
+
+`zoom-cycle.sh` is a softer alternative to `M-z` fullscreen. Each Cmd+l (`M-9`)
+press grows the **active** pane one level (5 levels; the 6th press wraps back to
+the even layout, same loop feel as the Cmd+k pane cycle). Every other pane stays
+visible and interactive the whole time — at level 5 the active pane takes ~7/8 of
+the window in each axis and the rest share the remaining strip. Moving focus to
+another pane (Cmd+k, `M-h/j/k/l`, arrows, or a mouse click) collapses the zoom back
+to the even layout, wired via an `after-select-pane[99]` hook so it never clobbers
+other hooks. No patched tmux and no plugin: it just steps `resize-pane` in small
+increments (~100ms) so the change reads as a smooth glide.
 
 ## Pane graveyard
 
