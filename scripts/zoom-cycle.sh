@@ -73,8 +73,9 @@ case "${1:-cycle}" in
       w=$(( cw + (tw - cw) * i / STEPS ))
       h=$(( ch + (th - ch) * i / STEPS ))
       tmux resize-pane -x "$w" -y "$h" 2>/dev/null || true
-      [ "$i" -lt "$STEPS" ] && sleep "$FRAME"
+      if [ "$i" -lt "$STEPS" ]; then sleep "$FRAME"; fi
     done
+    exit 0
     ;;
 
   *)
