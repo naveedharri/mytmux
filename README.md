@@ -63,22 +63,22 @@ Prefix is remapped: `M-b` sends prefix (option+b). Most actions are prefix-less
 - `M-h/j/k/l` move between panes, `M-1`..`M-5` jump to window
 - `M-z` zoom pane, `M-n` new tiled split, `M-x` kill pane (confirm)
 - `M-q` / `M-p` bury current pane (recoverable), `M-r` restore last buried pane
-- `M-0` cycle to next pane (loops), `M-9` leveled progressive zoom of active pane
+- `M-0` cycle to next pane (loops), `M-9` toggle a big zoom of the active pane
 
 Cmd-key equivalents are routed through Karabiner (Cmd -> Option+key inside Warp),
 so on this machine Cmd+k = `M-0` (cycle) and Cmd+l = `M-9` (zoom).
 
-## Leveled zoom
+## Pane zoom
 
-`zoom-cycle.sh` is a softer alternative to `M-z` fullscreen. Each Cmd+l (`M-9`)
-press grows the **active** pane one level (5 levels; the 6th press wraps back to
-the even layout, same loop feel as the Cmd+k pane cycle). Every other pane stays
-visible and interactive the whole time — at level 5 the active pane takes ~7/8 of
-the window in each axis and the rest share the remaining strip. Moving focus to
-another pane (Cmd+k, `M-h/j/k/l`, arrows, or a mouse click) collapses the zoom back
-to the even layout, wired via an `after-select-pane[99]` hook so it never clobbers
-other hooks. No patched tmux and no plugin: it just steps `resize-pane` in small
-increments (~100ms) so the change reads as a smooth glide.
+`zoom-cycle.sh` is a softer alternative to `M-z` fullscreen. Cmd+l (`M-9`) toggles
+the **active** pane between the even layout and one big zoom where it takes ~7/8
+(3.5/4) of the window in each axis. There are deliberately no intermediate levels:
+one press, one useful zoom, press again to collapse. Every other pane stays visible
+and interactive the whole time — the rest share the remaining strip. Moving focus to
+another pane (Cmd+k, `M-h/j/k/l`, arrows, or a mouse click) collapses the zoom too,
+wired via an `after-select-pane[99]` hook so it never clobbers other hooks. No
+patched tmux and no plugin: the zoom-in steps `resize-pane` in small increments
+(~100ms) so it reads as a smooth glide; the collapse restores the exact saved layout.
 
 ## Pane graveyard
 
