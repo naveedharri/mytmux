@@ -21,9 +21,9 @@
 # with many sessions (e.g. the _graveyard) is often NOT the window you acted in.
 set -uo pipefail
 
-MAIN_FRAC=0.85   # width share of the focused pane; the rest is the sidebar list.
-                 # Near-fullscreen focus while the other panes stay in view as a
-                 # list. Lower it (e.g. 0.72) for a wider, more readable list.
+MAIN_PCT=80      # width % of the focused pane; the rest is the sidebar list (80/20).
+                 # Set via tmux's native percentage syntax so there is no window-
+                 # width math to go wrong. Lower it (e.g. 70) for a wider list.
 
 sub="${1:-toggle}"
 win="${2:-$(tmux display -p '#{window_id}')}"   # explicit window, fallback if run by hand
@@ -65,11 +65,10 @@ case "$sub" in
 
     ap="$(tmux display -p -t "$win" '#{pane_id}')"                 # active (to focus)
     p0="$(tmux list-panes -t "$win" -F '#{pane_id}' | head -1)"    # current main slot
-    ww="$(tmux display -p -t "$win" '#{window_width}')"
 
     # Remember the even layout for an exact restore, then lay out as a list.
     tmux set -w -t "$win" @zoom_base "$(tmux display -p -t "$win" '#{window_layout}')"
-    tmux set -w -t "$win" main-pane-width "$(awk "BEGIN{printf \"%d\", $ww * $MAIN_FRAC}")"
+    tmux set -w -t "$win" main-pane-width "${MAIN_PCT}%"
     tmux select-layout -t "$win" main-vertical
 
     # main-vertical makes the FIRST pane the big one; swap the active pane into that

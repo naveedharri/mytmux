@@ -90,8 +90,9 @@ A layout swap is used instead of resizing panes in place because shrinking panes
 inside a grid makes them narrow, and terminal TUIs (Claude Code especially) reflow
 badly when narrow — every word wraps onto its own line and the background panes look
 broken. The list keeps each background pane a full-height slice. The focused pane's
-width share is `MAIN_FRAC` in the script (default `0.85`, near-fullscreen); lower it
-(e.g. `0.72`) for a wider, more readable list. Instant, no animation, no plugin.
+width is `MAIN_PCT` in the script (default `80`, an 80/20 split, set via tmux's native
+percentage syntax); lower it (e.g. `70`) for a wider, more readable list. Instant, no
+animation, no plugin.
 
 ## Pane graveyard
 
