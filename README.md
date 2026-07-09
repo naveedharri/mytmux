@@ -1,5 +1,13 @@
 # mytmux
 
+**In simple words:** this is the easiest way to lay out your terminal for running
+multiple AI agents at once. You split one window into several panes (split screens),
+run a Claude/agent session in each, and zoom into whichever one you're focused on
+without losing sight of the others. One command sets it all up, and the same layout,
+keybindings, and zoom behavior follow you to any machine. It's built for agentic work:
+watch many agents side by side, jump between them fast, and blow one up big when you
+need to read it.
+
 My portable tmux setup. Clone on any new machine, run one command, and my exact
 tmux config, keybindings, custom scripts, and Warp terminal settings are applied.
 
