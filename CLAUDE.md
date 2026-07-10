@@ -37,7 +37,7 @@ If the user prefers manual steps, or the installer fails, do exactly what it doe
 4. Symlink: `ln -sf ~/.local/share/oh-my-tmux/.tmux.conf ~/.config/tmux/tmux.conf`
 5. Copy this repo's `tmux.conf.local` → `~/.config/tmux/tmux.conf.local`
 6. Copy every `scripts/*.sh` → `~/.config/tmux/scripts/` and `chmod +x` them
-   (currently `pane-graveyard.sh` and `pulse-border.sh`)
+   (currently `claude-recover.sh`, `pane-namer.sh`, `pulse-border.sh`, `zoom-cycle.sh`)
 7. Copy `warp/settings.toml` → `~/.warp/settings.toml` (only if Warp is installed;
    back up the existing one first). Restart Warp so option-as-Meta takes effect.
 8. Reload: `tmux source ~/.config/tmux/tmux.conf`

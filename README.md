@@ -54,7 +54,8 @@ curl -fsSL https://raw.githubusercontent.com/naveedharri/mytmux/develop/install.
 | (cloned) gpakosz/.tmux       | `~/.local/share/oh-my-tmux`           | Oh My Tmux framework                                   |
 | symlink                      | `~/.config/tmux/tmux.conf`            | points at the framework `.tmux.conf`                   |
 | `tmux.conf.local`            | `~/.config/tmux/tmux.conf.local`      | my customizations (bindings, status bar, options)      |
-| `scripts/pane-graveyard.sh`  | `~/.config/tmux/scripts/`             | "undo close pane" — buries panes instead of killing    |
+| `scripts/claude-recover.sh`  | `~/.config/tmux/scripts/`             | kill a Claude pane for real, resume the exact session later |
+| `scripts/pane-namer.sh`      | `~/.config/tmux/scripts/`             | BANKYE + NATO call signs on each pane border            |
 | `scripts/pulse-border.sh`    | `~/.config/tmux/scripts/`             | animates the active pane border through a cyan gradient |
 | `scripts/zoom-cycle.sh`      | `~/.config/tmux/scripts/`             | focus zoom: active pane big, others as a side list (Cmd+l) |
 | `warp/settings.toml`         | `~/.warp/settings.toml`               | Warp prefs, incl. option-as-Meta so `M-` bindings work |
@@ -70,7 +71,7 @@ Prefix is remapped: `M-b` sends prefix (option+b). Most actions are prefix-less
 - `M-t` new window, `M--` split top/bottom, `M-\` split left/right
 - `M-h/j/k/l` move between panes, `M-1`..`M-5` jump to window
 - `M-z` zoom pane, `M-n` new tiled split, `M-x` kill pane (confirm)
-- `M-q` / `M-p` bury current pane (recoverable), `M-r` restore last buried pane
+- `M-q` / `M-p` (Cmd+o) kill the current Claude pane for real, recording its session; `M-r` / `M-u` (Cmd+u) resume that exact conversation in a new pane
 - `M-0` cycle to next pane (loops), `M-9` toggle a big zoom of the active pane
 
 Cmd-key equivalents are routed through Karabiner (Cmd -> Option+key inside Warp),
@@ -94,12 +95,33 @@ width is `MAIN_PCT` in the script (default `80`, an 80/20 split, set via tmux's 
 percentage syntax); lower it (e.g. `70`) for a wider, more readable list. Instant, no
 animation, no plugin.
 
-## Pane graveyard
+## Claude pane kill + resume
 
-`pane-graveyard.sh` gives "undo close pane". Instead of killing a pane (which
-kills its process), it moves the pane into a detached `_graveyard` session so the
-running program (e.g. a live Claude session) keeps going and can be pulled back
-exactly as it was.
+`claude-recover.sh` replaces the old "bury in a graveyard" trick, which left every
+closed pane's Claude process running forever in a detached `_graveyard` session and
+leaked RAM. Instead:
+
+- **Cmd+o** (`M-q` / `M-p`) records the pane's Claude session id and cwd, then
+  **kills the pane for real** so the process is freed. The session id is just the
+  transcript filename under `~/.claude/projects/<cwd-slug>/<id>.jsonl`; the pane's
+  live session is the most-recently-written transcript for its cwd. The record
+  (one line, `id<TAB>cwd`) is stored at `$XDG_STATE_HOME/mytmux/last-killed-claude`.
+- **Cmd+u** (`M-u` / `M-r`) opens a fresh pane running `claude --resume <id>` in the
+  original cwd, reloading that exact conversation, then clears the record. With no
+  record it falls back to `claude --continue` (latest conversation in the pane's cwd).
+
+Only the single most-recent kill is remembered, so this recovers the last pane you
+closed. The conversation is restored fully (Claude persists every turn to disk); the
+terminal scrollback starts fresh.
+
+## Pane call signs
+
+`pane-namer.sh` labels every pane on its top border: pane 1 is always **BANKYE**, the
+rest are NATO phonetic by position (**BRAVO-2**, **CHARLIE-3**, **DELTA-4**, …). Names
+live in each pane's `@name` option (not `pane_title`, so the running program can't
+overwrite them) and are shown via `pane-border-status top`. Hooks re-run the namer on
+split/new-window (synchronously, for instant naming) and on layout change (deferred,
+so a killed pane's survivors renumber gap-free once tmux has settled).
 
 ## Animated pane border
 

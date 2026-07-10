@@ -589,20 +589,22 @@ bind -n ø confirm-before -p "kill all OTHER windows? (y/n)" "kill-window -a" # 
 # Kept at end of file so they win over any earlier bindings.
 # Cmd+n: new pane running Claude in dangerous-skip-permissions mode, auto-tile grid
 bind -n M-n split-window -c '#{pane_current_path}' 'claude --dangerously-skip-permissions' \; select-layout tiled
-# Cmd+o: close current pane RECOVERABLY (bury in _graveyard, process kept alive).
-# Warp swallows Option+O, so Karabiner maps Cmd+O -> Option+Q (M-q) instead.
-# Restore the last buried pane with ⌥r. For a real, permanent kill use ⌥x.
-bind -n M-q run-shell "~/.config/tmux/scripts/pane-graveyard.sh bury"
-# Cmd+p: same recoverable close (alternate binding)
-bind -n M-p run-shell "~/.config/tmux/scripts/pane-graveyard.sh bury"
+# Cmd+o: KILL the current pane for real (frees the process — no leaked idle
+# Claudes), but first record its Claude session-id + cwd so it can be resumed
+# exactly. Warp swallows Option+O, so Karabiner maps Cmd+O -> Option+Q (M-q).
+# Bring the killed conversation back with Cmd+u. For a bare kill with no record,
+# use ⌥x.
+bind -n M-q run-shell "~/.config/tmux/scripts/claude-recover.sh kill"
+# Cmd+p: same recorded kill (alternate binding)
+bind -n M-p run-shell "~/.config/tmux/scripts/claude-recover.sh kill"
 
-# ⌥r: restore (un-close) the most-recently buried pane, exactly as it was
-bind -n M-r run-shell "~/.config/tmux/scripts/pane-graveyard.sh restore"
-bind -n ® run-shell "~/.config/tmux/scripts/pane-graveyard.sh restore"   # ⌥r macOS char fallback
-# Cmd+u: smart restore. Bring back the last buried pane if alive; otherwise
-# open a fresh pane running `claude --continue` to resume the killed session.
+# ⌥r / Cmd+u: resume the last Claude killed with Cmd+o — a fresh pane running
+# `claude --resume <id>` in its original cwd, reloading the exact conversation.
+# If nothing was recorded, falls back to `claude --continue` (latest in this dir).
 # (Karabiner maps Cmd+u -> Option+u -> M-u inside Warp.)
-bind -n M-u run-shell "~/.config/tmux/scripts/pane-graveyard.sh smart-restore"
+bind -n M-r run-shell "~/.config/tmux/scripts/claude-recover.sh resume"
+bind -n ® run-shell "~/.config/tmux/scripts/claude-recover.sh resume"   # ⌥r macOS char fallback
+bind -n M-u run-shell "~/.config/tmux/scripts/claude-recover.sh resume"
 # Cmd+k: jump to next pane (Karabiner sends M-0)
 bind -n M-0 select-pane -t :.+
 
