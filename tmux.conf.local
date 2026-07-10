@@ -587,8 +587,11 @@ bind -n ø confirm-before -p "kill all OTHER windows? (y/n)" "kill-window -a" # 
 
 # --- Cmd-key pane controls (Karabiner maps Cmd -> Option inside Warp) ---
 # Kept at end of file so they win over any earlier bindings.
-# Cmd+n: new pane running Claude in dangerous-skip-permissions mode, auto-tile grid
-bind -n M-n split-window -c '#{pane_current_path}' 'claude --dangerously-skip-permissions' \; select-layout tiled
+# Cmd+n: new pane running Claude (dangerous-skip-permissions), pinned to a freshly
+# minted session id stored on the pane, then auto-tile. The pinned id is what makes
+# Cmd+o/Cmd+u recover THIS pane's exact conversation even when other Claudes share
+# the cwd.
+bind -n M-n run-shell "~/.config/tmux/scripts/claude-recover.sh new"
 # Cmd+o: KILL the current pane for real (frees the process — no leaked idle
 # Claudes), but first record its Claude session-id + cwd so it can be resumed
 # exactly. Warp swallows Option+O, so Karabiner maps Cmd+O -> Option+Q (M-q).
