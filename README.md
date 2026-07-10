@@ -101,11 +101,16 @@ animation, no plugin.
 closed pane's Claude process running forever in a detached `_graveyard` session and
 leaked RAM. Instead:
 
-- **Cmd+o** (`M-q` / `M-p`) records the pane's Claude session id and cwd, then
-  **kills the pane for real** so the process is freed. The session id is just the
-  transcript filename under `~/.claude/projects/<cwd-slug>/<id>.jsonl`; the pane's
-  live session is the most-recently-written transcript for its cwd. The record
-  (one line, `id<TAB>cwd`) is stored at `$XDG_STATE_HOME/mytmux/last-killed-claude`.
+- **Cmd+n** (`M-n`) mints a fresh session UUID, launches `claude --session-id <uuid>`
+  in the new pane, and stashes the uuid on the pane in its `@claude_session` option.
+  We mint the id ourselves so there is never any doubt which session belongs to which
+  pane, even when several Claudes share one cwd (Claude keys transcripts by cwd, so
+  "newest transcript for the folder" guesses wrong the moment another pane writes).
+- **Cmd+o** (`M-q` / `M-p`) reads that pinned `@claude_session` back — exact, no
+  guessing — records it with the cwd, then **kills the pane for real** so the process
+  is freed. The record (one line, `id<TAB>cwd`) is stored at
+  `$XDG_STATE_HOME/mytmux/last-killed-claude`. Panes not launched via Cmd+n have no
+  pinned id, so they fall back to `claude --continue` on resume.
 - **Cmd+u** (`M-u` / `M-r`) opens a fresh pane running `claude --resume <id>` in the
   original cwd, reloading that exact conversation, then clears the record. With no
   record it falls back to `claude --continue` (latest conversation in the pane's cwd).
