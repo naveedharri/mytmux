@@ -634,3 +634,36 @@ set -g pane-border-lines heavy #!important
 # Background loop rewrites pane-active-border-style on a timer; the script guards
 # against duplicate loops on reload and exits when the tmux server is gone.
 run -b 'sh ~/.config/tmux/scripts/pulse-border.sh'
+
+# --- Pane call signs: BANKYE + NATO phonetic on every pane border ---
+# Pane 1 = BANKYE (commander); the rest are BRAVO-2, CHARLIE-3, DELTA-4, ...
+# pane-namer.sh writes each name into the per-pane @name option so the program
+# running in the pane can't overwrite it. The border shows @name, falling back
+# to the raw pane_title only if a pane was never named. Titles show on the TOP
+# border line, right beside the teal arrows/heavy divider already configured.
+set -g pane-border-status top #!important
+set -g pane-border-format ' #{?#{@name},#{@name},#{pane_title}} ' #!important
+
+# Re-run the namer so numbering stays gap-free. Two timing regimes, because tmux
+# fires add- and remove-events at different points in its own bookkeeping:
+#
+#   ADDS (split / new window / new session) fire AFTER the new pane exists, so run
+#   the namer SYNCHRONOUSLY (no -b) for instant, correct naming. A backgrounded run
+#   here would fire before the pane is registered and leave it blank.
+#
+#   REMOVES surface only via window-layout-changed, which fires BEFORE tmux has
+#   finished renumbering, so a synchronous run still sees the dying pane and the
+#   survivors inherit shifted names. Defer it (-b + a short sleep) so it reads the
+#   settled pane list. This deferred pass also re-affirms adds a beat later — a
+#   harmless no-op — so it doubles as the catch-all for buries, zooms, and layouts.
+#
+# Indexed hooks ([50]/[52]/...) overwrite in place on re-source instead of stacking
+# duplicates, and stay clear of the after-select-pane[99] zoom hook.
+set-hook -g after-split-window[50] "run-shell '~/.config/tmux/scripts/pane-namer.sh #{window_id}'"
+set-hook -g after-new-window[52] "run-shell '~/.config/tmux/scripts/pane-namer.sh #{window_id}'"
+set-hook -g after-new-session[53] "run-shell '~/.config/tmux/scripts/pane-namer.sh #{window_id}'"
+set-hook -g window-layout-changed[54] "run-shell -b 'sleep 0.2; ~/.config/tmux/scripts/pane-namer.sh #{window_id}'"
+
+# Name whatever panes already exist the moment this config loads (each window's
+# first pane -> BANKYE), across every window, not just the current one.
+run -b 'tmux list-windows -a -F "##{window_id}" | while read w; do ~/.config/tmux/scripts/pane-namer.sh "$w"; done'
