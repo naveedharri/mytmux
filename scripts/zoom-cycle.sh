@@ -21,7 +21,7 @@
 # with many sessions (e.g. the _graveyard) is often NOT the window you acted in.
 set -uo pipefail
 
-MAIN_PCT=80      # width % of the focused pane; the rest is the sidebar list (80/20).
+MAIN_PCT=70      # width % of the focused pane; the rest is the sidebar list (70/30).
                  # Set via tmux's native percentage syntax so there is no window-
                  # width math to go wrong. Lower it (e.g. 70) for a wider list.
 
